@@ -11,6 +11,7 @@
     ],
   },
   "files": [
+    { "path": "Towards-iOS-Info.plist" },
     { "kind": "folder", "path": "Towards iOS", "target-membership": [ "Towards iOS" ] },
     {
       "kind": "group",
@@ -39,6 +40,7 @@
         "DEVELOPMENT_TEAM": "W7F48ZR5N4",
         "ENABLE_PREVIEWS": "YES",
         "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "Towards-iOS-Info.plist",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": "YES",
         "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents": "YES",
         "INFOPLIST_KEY_UILaunchScreen_Generation": "YES",
