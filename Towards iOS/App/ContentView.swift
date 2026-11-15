@@ -24,20 +24,44 @@ struct ContentView: View {
                     ProgressView()
                     
                 case .loaded(let lessons):
-                    ForEach(lessons) { lesson in
-                        Section(lesson.title, content: {
-                            Text(lesson.body)
-                                .foregroundStyle(.ink)
-                                .font(.spBody)
-                        }).font(.spHeadline)
+                    ForEach(lessons.enumerated(), id: \.element) { index, lessonValue in
+                        VStack(alignment: .leading) {
+                            HStack(alignment: .center, spacing: 16) {
+                                Text("0\(index + 1)")
+                                    .foregroundStyle(.ink)
+                                    .font(.spRowNumber)
+                                HStack(alignment: .center) {
+                                    VStack(alignment: .leading) {
+                                        Text(lessonValue.title)
+                                            .font(.spButton)
+                                            .foregroundStyle(.ink)
+                                            .padding(.bottom, 2)
+                                        
+                                        Text(lessonValue.meta)
+                                            .foregroundStyle(.muted)
+                                            .font(.spSubhead)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "lock")
+                                        .foregroundStyle(.muted)
+                                }
+                                    
+                            }
+                        }
+                        .padding() // Gives the background breathing room around your text
+                        .background(Color.fill) // Replace with your custom color
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .listRowBackground(Color.fill) // fills the List cell behind the row, including its insets
                     }
+                    
                     
                 case .error(let error):
                 Text(error)
                     .foregroundStyle(.signal)
                 }
             }
-            .navigationTitle("Towards iOS")
+            
+            .navigationTitle("All Lessons")
             .task {
                 load()
             }
