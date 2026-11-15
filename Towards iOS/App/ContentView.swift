@@ -7,42 +7,49 @@
 
 import SwiftUI
 
-/// Temporary root view for TI-2: proves the bundled lessons.json decodes into the models.
-/// TI-3 replaces the inline decoding with LessonRepository, and #15 replaces this view with the TabView.
 struct ContentView: View {
-    @State private var lessons: [Lesson] = []
     @State private var errorText: String?
-
+    @State private var lessons: [Lesson]?
+    
     var body: some View {
         NavigationStack {
             List {
                 if let errorText {
-                    Text(errorText).foregroundStyle(.red)
+                    Text(errorText)
+                } else if let lessons {
+                    ForEach(lessons) { lesson in
+                        Section(lesson.title, content: {
+                            Text(lesson.body)
+                                .font(.body)
+                        })
+                    }.navigationTitle("Summary")
+                } else {
+                    ProgressView()
                 }
-                ForEach(lessons) { lesson in
-                    VStack(alignment: .leading) {
-                        Text("\(lesson.number). \(lesson.title)")
-                        Text(lesson.meta).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
+            }.task {
+                load()
             }
-            .navigationTitle("Lessons")
         }
-        .task { load() }
     }
 
     private func load() {
-        guard let url = Bundle.main.url(forResource: "lessons", withExtension: "json") else {
-            errorText = "lessons.json is missing from the app bundle"
+        guard let url = Bundle.main.url(forResource: "lessons", withExtension: ".json") else {
+            errorText = "Couldn't find lessons.json in the bundle."
             return
         }
-        do {
-            let data = try Data(contentsOf: url)
-            let catalog = try JSONDecoder().decode(LessonCatalog.self, from: data)
-            lessons = catalog.phases.flatMap(\.lessons)
-        } catch {
-            errorText = String(describing: error)
+        
+        guard let data = try? Data(contentsOf: url) else {
+            errorText = "Couldn't derive data from the bundle."
+            return
         }
+        
+        guard let result = try? JSONDecoder().decode(LessonCatalog.self, from: data) else {
+            errorText = "Couldn't decode LessonCatalog from data."
+            return
+        }
+        
+        self.lessons = result.phases.flatMap(\.lessons)
+        return
     }
 }
 
