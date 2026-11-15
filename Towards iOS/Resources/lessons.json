@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "phases": [
+    {
+      "id": "p1",
+      "number": 1,
+      "title": "Foundations",
+      "lessons": [
+        {
+          "id": "p1.views-modifiers",
+          "number": 1,
+          "title": "Views and modifiers",
+          "meta": "Basics · Demo",
+          "minutes": 6,
+          "body": "A SwiftUI view is a lightweight struct that describes a piece of UI. Each modifier wraps the view in a new view, so the order you apply them in changes the result.",
+          "codeSample": "Text(\"Hello\")\n    .padding()\n    .background(.yellow)",
+          "keyPoints": [
+            "Views are value types, cheap to create and recreate",
+            "Each modifier returns a new view that wraps the old one",
+            "Order matters: padding then background differs from background then padding"
+          ]
+        },
+        {
+          "id": "p1.layout",
+          "number": 2,
+          "title": "Stacks and layout",
+          "meta": "Layout · Demo",
+          "minutes": 8,
+          "body": "HStack, VStack and ZStack arrange their children. Spacer and frame decide how the free space is shared. ViewThatFits picks the first layout that fits the space offered.",
+          "codeSample": "ViewThatFits {\n    HStack { icon; title }\n    VStack { icon; title }\n}",
+          "keyPoints": [
+            "A parent proposes a size and each child chooses its own",
+            "Spacer expands to fill the free space along the stack's axis",
+            "ViewThatFits uses the first child that fits"
+          ]
+        },
+        {
+          "id": "p1.state-binding",
+          "number": 3,
+          "title": "State and Binding",
+          "meta": "Data flow · Demo",
+          "minutes": 8,
+          "body": "@State gives a view its own source of truth. @Binding lets a child read and write state that its parent owns.",
+          "codeSample": "struct Parent: View {\n    @State private var isLit = false\n    var body: some View { LanternToggle(isLit: $isLit) }\n}\n\nstruct LanternToggle: View {\n    @Binding var isLit: Bool\n    var body: some View { Toggle(\"Light\", isOn: $isLit) }\n}",
+          "keyPoints": [
+            "@State is owned by the view and survives re-renders",
+            "$value passes a Binding, a read-write reference to that state",
+            "Keep one source of truth: children get bindings, not copies"
+          ]
+        },
+        {
+          "id": "p1.lists",
+          "number": 4,
+          "title": "Lists and identity",
+          "meta": "Collections · Demo",
+          "minutes": 7,
+          "body": "List and ForEach build rows from a collection. Each element needs a stable identity so SwiftUI can match rows between updates.",
+          "codeSample": "List(phase.lessons) { lesson in\n    LessonRow(lesson: lesson)\n}",
+          "keyPoints": [
+            "Identifiable gives each element a stable id",
+            "Stable ids keep row state and animations correct",
+            "Never use array indices or fresh UUIDs as ids for changing data"
+          ]
+        },
+        {
+          "id": "p1.navigation",
+          "number": 5,
+          "title": "Navigation",
+          "meta": "Navigation · Demo",
+          "minutes": 7,
+          "body": "NavigationStack pushes screens by value. A NavigationLink appends a value, and navigationDestination says which view shows it.",
+          "codeSample": "NavigationStack {\n    List(lessons) { lesson in\n        NavigationLink(lesson.title, value: lesson)\n    }\n    .navigationDestination(for: Lesson.self) { LessonView(lesson: $0) }\n}",
+          "keyPoints": [
+            "Push by value instead of building the destination inline",
+            "Values you push must be Hashable",
+            "A path you own makes deep links and state restoration possible"
+          ]
+        },
+        {
+          "id": "p1.codable",
+          "number": 6,
+          "title": "Codable and bundle data",
+          "meta": "Data · Reading",
+          "minutes": 6,
+          "body": "Codable turns JSON into Swift types. This app ships its lessons inside the bundle as lessons.json and decodes them at launch.",
+          "codeSample": "guard let url = Bundle.main.url(forResource: \"lessons\", withExtension: \"json\") else {\n    throw LessonLoadError.fileNotFound(\"lessons.json\")\n}\nlet catalog = try JSONDecoder().decode(LessonCatalog.self, from: Data(contentsOf: url))",
+          "keyPoints": [
+            "Codable is synthesized when every stored property is Codable",
+            "JSON keys must match property names unless you add CodingKeys",
+            "A DecodingError's codingPath points at the bad field"
+          ]
+        },
+        {
+          "id": "p1.previews-assets",
+          "number": 7,
+          "title": "Previews and assets",
+          "meta": "Tooling · Reading",
+          "minutes": 5,
+          "body": "#Preview renders a view in Xcode without running the app. The asset catalog holds colors and images with light and dark variants.",
+          "codeSample": "#Preview(\"Dark, large text\") {\n    LessonRow(lesson: .sample)\n        .preferredColorScheme(.dark)\n        .dynamicTypeSize(.accessibility3)\n}",
+          "keyPoints": [
+            "Previews need sample data, so keep Lesson.sample handy",
+            "Check dark mode and large text in previews, not only on a device",
+            "Asset catalog colors switch automatically between light and dark"
+          ]
+        }
+      ]
+    }
+  ]
+}

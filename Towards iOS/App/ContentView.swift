@@ -6,56 +6,46 @@
 //
 
 import SwiftUI
-import SwiftData
 
+/// Temporary root view for TI-2: proves the bundled lessons.json decodes into the models.
+/// TI-3 replaces the inline decoding with LessonRepository, and #15 replaces this view with the TabView.
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var lessons: [Lesson] = []
+    @State private var errorText: String?
 
     var body: some View {
-        NavigationSplitView {
+        NavigationStack {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+                if let errorText {
+                    Text(errorText).foregroundStyle(.red)
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                ForEach(lessons) { lesson in
+                    VStack(alignment: .leading) {
+                        Text("\(lesson.number). \(lesson.title)")
+                        Text(lesson.meta).font(.caption).foregroundStyle(.secondary)
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .navigationTitle("Lessons")
         }
+        .task { load() }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+    private func load() {
+        guard let url = Bundle.main.url(forResource: "lessons", withExtension: "json") else {
+            errorText = "lessons.json is missing from the app bundle"
+            return
         }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+        do {
+            let data = try Data(contentsOf: url)
+            let catalog = try JSONDecoder().decode(LessonCatalog.self, from: data)
+            lessons = catalog.phases.flatMap(\.lessons)
+        } catch {
+            errorText = String(describing: error)
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
