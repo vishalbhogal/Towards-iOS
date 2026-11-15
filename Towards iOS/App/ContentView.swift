@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-enum LoadStates {
+enum LoadState {
     case loading
     case loaded([Lesson])
     case error(String)
 }
 
 struct ContentView: View {
-    @State private var state: LoadStates = .loading
+    @State private var state: LoadState = .loading
     
     var body: some View {
         NavigationStack {
@@ -34,7 +34,7 @@ struct ContentView: View {
                     
                 case .error(let error):
                 Text(error)
-                    .foregroundColor(.signal)
+                    .foregroundStyle(.signal)
                 }
             }
             .navigationTitle("Towards iOS")
@@ -60,7 +60,7 @@ struct ContentView: View {
             let resultLessons = result.phases.flatMap(\.lessons)
             state = .loaded(resultLessons)
         } catch {
-            state = .error(String(describing: error.localizedDescription))
+            state = .error(String(describing: error))
         }
     }
 }
