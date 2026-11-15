@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-enum ViewStates {
+enum LoadStates {
     case loading
     case loaded([Lesson])
     case error(String)
 }
 
 struct ContentView: View {
-    @State private var state = ViewStates.loading
+    @State private var state: LoadStates = .loading
     
     var body: some View {
         NavigationStack {
@@ -45,7 +45,7 @@ struct ContentView: View {
     }
 
     private func load() {
-        guard let url = Bundle.main.url(forResource: "lessons", withExtension: ".json") else {
+        guard let url = Bundle.main.url(forResource: "lessons", withExtension: "json") else {
             state = .error("Couldn't find lessons.json in the bundle.")
             return
         }
@@ -60,7 +60,7 @@ struct ContentView: View {
             let resultLessons = result.phases.flatMap(\.lessons)
             state = .loaded(resultLessons)
         } catch {
-            state = .error(error.localizedDescription)
+            state = .error(String(describing: error.localizedDescription))
         }
     }
 }
