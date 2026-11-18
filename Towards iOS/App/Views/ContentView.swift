@@ -14,20 +14,22 @@ enum LoadState {
 }
 
 struct ContentView: View {
-    @State private var state: LoadState = .loading
-    
+    @State private var viewModel: LessonCatalogViewable
+    init(viewModel: LessonCatalogViewable) {
+        self.viewModel = viewModel
+    }
     var body: some View {
         NavigationStack {
             List {
-                switch state {
+                switch viewModel.loadState {
                 case .loading:
                     ProgressView()
                     
                 case .loaded(let lessons):
-                    ForEach(lessons.enumerated(), id: \.element) { index, lessonValue in
+                    ForEach(lessons) { lessonValue in
                         VStack(alignment: .leading) {
                             HStack(alignment: .center, spacing: 16) {
-                                Text("0\(index + 1)")
+                                Text(lessonValue.number.formatted(.number.precision(.integerLength(2))))
                                     .foregroundStyle(.ink)
                                     .font(.spRowNumber)
                                 HStack(alignment: .center) {
@@ -45,10 +47,11 @@ struct ContentView: View {
                                     Image(systemName: "lock")
                                         .foregroundStyle(.muted)
                                 }
+                                .padding(.horizontal, 8)
                                     
                             }
                         }
-                        .padding() // Gives the background breathing room around your text
+                        .padding(8) // Gives the background breathing room around your text
                         .background(Color.fill) // Replace with your custom color
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .listRowBackground(Color.fill) // fills the List cell behind the row, including its insets
@@ -63,32 +66,12 @@ struct ContentView: View {
             
             .navigationTitle("All Lessons")
             .task {
-                load()
+                await viewModel.getLessons()
             }
-        }
-    }
-
-    private func load() {
-        guard let url = Bundle.main.url(forResource: "lessons", withExtension: "json") else {
-            state = .error("Couldn't find lessons.json in the bundle.")
-            return
-        }
-        
-        guard let data = try? Data(contentsOf: url) else {
-            state = .error("Couldn't derive data from the bundle.")
-            return
-        }
-        
-        do {
-            let result = try JSONDecoder().decode(LessonCatalog.self, from: data)
-            let resultLessons = result.phases.flatMap(\.lessons)
-            state = .loaded(resultLessons)
-        } catch {
-            state = .error(String(describing: error))
         }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(viewModel: LessonCatalogViewModel(service: LessonCatalogService()))
 }
